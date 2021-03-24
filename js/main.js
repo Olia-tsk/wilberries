@@ -89,7 +89,7 @@ const renderCards = function(data) {
     longGoodsList.textContent = ''
 
     const cards = data.map(createCard)
-    cards.forEach
+    cards.
 
     document.body.classList.add('show-goods')
 }
