@@ -15,6 +15,8 @@ const modalCart = document.querySelector('#modal-cart')
 const modalClose = document.querySelector('.modal-close')
 const cartTableGoods = document.querySelector('.cart-table__goods')
 const cardTableTotal = document.querySelector('.card-table__total')
+const cartCount = document.querySelector('.cart-count')
+const btnClear = document.querySelector('.btn-clear')
 
 const getGoods = async function() {
     const result = await fetch('db/db.json')
@@ -26,14 +28,24 @@ const getGoods = async function() {
 
 const cart = {
     cartGoods: [],
+    cartCounter() {
+        cartCount.textContent = this.cartGoods.reduce((sum, item) => {
+            return sum + item.count
+        }, 0)
+    },
+    clearCart() {
+        this.cartGoods.length = 0
+        this.cartCounter()
+        this.renderCart()
+    },
     renderCart() {
         cartTableGoods.textContent = ''
         this.cartGoods.forEach(({ id, name, price, count }) => {
             const trGood = document.createElement('tr')
             trGood.className = 'cart-item'
             trGood.dataset.id = id
-            trGood.innerHTML = 
-            `
+            trGood.innerHTML =
+                `
             <td>${name}</td>
             <td>${price}</td>
             <td><button class="cart-btn-minus">-</button></td>
@@ -46,7 +58,7 @@ const cart = {
         })
 
         const totalPrice = this.cartGoods.reduce((sum, item) => {
-            return sum + (item.price*item.count)
+            return sum + (item.price * item.count)
         }, 0)
 
         cardTableTotal.textContent = totalPrice + '$'
@@ -54,6 +66,7 @@ const cart = {
     deleteGood(id) {
         this.cartGoods = this.cartGoods.filter(item => id !== item.id)
         this.renderCart()
+        this.cartCounter()
     },
     minusGood(id) {
         for (const item of this.cartGoods) {
@@ -62,20 +75,22 @@ const cart = {
                     this.deleteGood(id)
                 } else {
                     item.count--
-                }                
+                }
                 break
             }
         }
         this.renderCart()
+        this.cartCounter()
     },
     plusGood(id) {
         for (const item of this.cartGoods) {
             if (item.id === id) {
                 item.count++
-                break
+                    break
             }
         }
         this.renderCart()
+        this.cartCounter()
     },
     addCartGoods(id) {
         const goodItem = this.cartGoods.find(item => item.id === id)
@@ -84,17 +99,22 @@ const cart = {
         } else {
             getGoods()
                 .then(data => data.find(item => item.id === id))
-                .then(({ id, name, price}) => {
+                .then(({ id, name, price }) => {
                     this.cartGoods.push({
                         id,
                         name,
                         price,
                         count: 1
                     })
+                    this.cartCounter()
                 })
         }
     }
 }
+
+btnClear.addEventListener('click', () => {
+    cart.clearCart()
+})
 
 document.body.addEventListener('click', event => {
     const addToCart = event.target.closest('.add-to-cart')
@@ -118,7 +138,7 @@ cartTableGoods.addEventListener('click', event => {
         if (target.classList.contains('cart-btn-plus')) {
             cart.plusGood(id)
         }
-    }    
+    }
 })
 
 const openModal = function() {
@@ -165,10 +185,10 @@ const showAcsessories = document.querySelectorAll('.show-acsessories')
 const showClothes = document.querySelectorAll('.show-clothes')
 
 const createCard = function({ label, name, img, description, id, price }) {
-    const card = document.createElement('div')
-    card.className = 'col-lg-3 col-sm-6'
-    
-    card.innerHTML = `
+        const card = document.createElement('div')
+        card.className = 'col-lg-3 col-sm-6'
+
+        card.innerHTML = `
         <div class="goods-card">
             ${label ? `<span class="label">${label}</span>` : ''}
             <img src="db/${img}" alt="image: ${name}" class="goods-image">
